@@ -6,3 +6,7 @@ const apiEndPoint = apiUrl + "/request";
 export function getRequest() {
   return http.get(apiEndPoint);
 }
+
+export function updateRequest(payload) {
+  return http.put(apiEndPoint + '/' + payload._id, payload);
+}

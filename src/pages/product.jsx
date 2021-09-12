@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../components/layout/adminLayout';
 import _ from 'lodash';
-import { getProduct, sendProduct} from '../services/productService';
+import { getProduct, sendProduct, updateProduct} from '../services/productService';
 import { cosmetics, jewelry, other, property, rooms } from "../utils/helper";
 
 const categories = [
@@ -28,6 +28,7 @@ const categories = [
 const Product = () => {
     const [data, setData] = useState({name: '', initialPrice: '', price: '', image: [], description: '', category: '', type: '', color: '', size: [], location: 'Headquater'});
     const [products, setProducts] = useState([]);
+    const [error, setError] = useState(false);
 
     const handleChange = (e, i) => {
         const newData = { ...data };
@@ -61,9 +62,13 @@ const Product = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const {data: product} = await sendProduct(data);
-        console.log(product)
-        window.location.reload();
+        if(data.name !== '' || data.image.length !== 0 || data.initialPrice !== '' || data.description !== '' || data.category !== '') {
+            const {data: product} = await sendProduct(data);
+            setError(false);
+            window.location.reload();
+        } else {
+            setError(true)
+        }
     }
 
     useEffect(() => {
@@ -73,11 +78,16 @@ const Product = () => {
         })();
     }, []);
 
-    console.log(products);
+    const handleApprove = (value) => {
+        updateProduct(value)
+    }
 
     return (  
         <AdminLayout>
             <h5 className="mb-4"><span className="text-success">+</span> Create Product</h5>
+            {error && <div className="alert alert-danger mx-4">
+               ! Some Fields are empty
+            </div>}
             <div className="ml-4 my-4">
                 <div className="media mb-3 align-items-center">
                     <div className="box">
@@ -90,30 +100,30 @@ const Product = () => {
                 <form>
                     <div className="card border-0 shadow-sm card-body">
                         <div className="row">
-                            <div className="col-lg-3 col-md-6">
+                            <div className="col-xl-3 col-md-6">
                                 <div className="form-group">
                                     <label htmlFor=""><h6>Name:</h6></label>
                                     <input type="text" name="name" value={data.name} onChange={handleChange} placeholder="Product name" className="form-control" />
                                 </div>
                             </div>
-                            <div className="col-lg-2 col-md-4">
+                            <div className="col-xl-2 col-md-4">
                                 <div className="form-group">
                                     <label htmlFor=""><h6>Price:</h6></label>
                                     <div className="input-group mb-3">
                                         <div className="input-group-prepend">
-                                            <span className="input-group-text bg-white border-right-0" id="basic-addon1">$</span>
+                                            <span className="input-group-text bg-white border-right-0" id="basic-addon1"><small className="font-weight-bold">RWF</small></span>
                                         </div>
                                         <input type="text" name="initialPrice" value={data.initialPrice} onChange={handleChange} className="form-control border-left-0" aria-label="Username" aria-describedby="basic-addon1" />
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-lg-3 col-md-4">
+                            <div className="col-xl-3 col-md-4">
                                 <div className="form-group">
                                     <label htmlFor=""><h6>Image:</h6></label>
                                     <input type="file" name="image" className="form-control" multiple onChange={handleChange} />
                                 </div>
                             </div>
-                            <div className="col-lg-4 col-md-4">
+                            <div className="col-xl-4 col-md-4">
                                 <div className="form-group">
                                     <label htmlFor=""><h6>Description:</h6></label>
                                     <textarea name="description" value={data.description} onChange={handleChange} rows="3" className="form-control" placeholder="Product Description"></textarea>
@@ -135,7 +145,7 @@ const Product = () => {
                 <form>
                     <div className="card border-0 shadow-sm card-body">
                         <div className="row">
-                            <div className="col-lg-3 col-md-6">
+                            <div className="col-xl-3 col-md-6">
                                 <div className="form-group">
                                     <label htmlFor=""><h6>Category:</h6></label>
                                     <select className="custom-select mr-sm-2" id="inlineFormCustomSelectPref" name="category" value={data.category?.label} onChange={handleChange}>
@@ -225,7 +235,7 @@ const Product = () => {
                                             <i className="fa fa-ellipsis-v" />
                                         </button>
                                         <div class="dropdown-menu dropdown-menu-right">
-                                        <button class="dropdown-item d-flex align-items-center" type="button">
+                                        <button class="dropdown-item d-flex align-items-center" type="button" onClick={() => handleApprove(product)}>
                                             <i className="fa fa-check-circle fa-2x text-success" /> &nbsp;&nbsp; <span>Approve</span>
                                         </button>
                                         <button class="dropdown-item d-flex align-items-center" type="button">

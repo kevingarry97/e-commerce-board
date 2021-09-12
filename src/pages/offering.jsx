@@ -1,9 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../components/layout/adminLayout';
-import { getRequest } from '../services/requestService';
+import { getRequest, updateRequest } from '../services/requestService';
 
 const Offerings = () => {
+    const [comment, setComment] = useState('');
+    const [item, setItem] = useState('');
     const [requests, setRequests] = useState([]);
 
     useEffect(() => {
@@ -13,7 +15,17 @@ const Offerings = () => {
         })();
     }, []);
 
-    console.log(requests);
+    const handleChange = ({target}) => {
+        setComment(target.value)
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const result = await updateRequest({...item, comment});
+        if(result.status !== 200) return alert('Error while updating')
+
+        window.location.reload();
+    }
 
     return (  
         <AdminLayout>
@@ -36,7 +48,7 @@ const Offerings = () => {
                         {requests.map((request, key) => (
                             <tr className="bg-white">
                                 <th scope="row">
-                                    <img src={request.image[0]} className="shadow-sm p-2" alt="" />
+                                    <img src={request.image[0]} width="80" className="shadow-sm p-2" alt="" />
                                 </th>
                                 <td><span className="text-muted">{request.name}</span></td>
                                 <td><span className="text-muted">{request.price}</span></td>
@@ -45,7 +57,7 @@ const Offerings = () => {
                                 <td><span className="text-muted">{request.user.phone}</span></td>
                                 <td><span className="text-muted">{request.dateCreated.slice(0, 12) + '...'}</span></td>
                                 <td>
-                                    {request.status === 'Not Read' ? <button className="btn" type="button" data-toggle="modal" data-target="#requestModal">
+                                    {request.status === 'Not Read' ? <button className="btn" type="button" data-toggle="modal" data-target="#requestModal" onClick={() => setItem(request)}>
                                         <i className="fa fa-envelope text-primary" />
                                     </button> : <i className="fa fa-envelope-o text-success" />}
                                 </td>
@@ -62,10 +74,10 @@ const Offerings = () => {
                             <h5 className="mb-4"><span className="text-success">+</span> &nbsp;Create Note</h5>
                         </div>
                         <div className="modal-body mt-2">
-                            <form>
+                            <form onSubmit={handleSubmit}>
                                 <div className="form-group">
                                     <label>Note:</label>
-                                    <textarea id="" className="form-control" placeholder="Give note" name="note" rows="3" />
+                                    <textarea value={comment} onChange={handleChange} className="form-control" placeholder="Give note" name="note" rows="3" />
                                 </div>
                                 <button className="btn btn-info btn-sm float-right mt-3 rounded-pill">Send Note</button>
                             </form>
